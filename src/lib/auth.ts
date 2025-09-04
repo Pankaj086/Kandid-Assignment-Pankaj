@@ -2,11 +2,13 @@ import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js"; // Next.js cookie integration
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db";
- 
+import * as schema from "@/db/auth-schema";
+
 export const auth = betterAuth({
   // Wire Drizzle + Postgres
   database: drizzleAdapter(db, {
     provider: "pg",
+    schema,
     // If your tables are plural (users, sessions, accounts), uncomment:
     // usePlural: true,
     // OR pass a schema mapping if needed:
