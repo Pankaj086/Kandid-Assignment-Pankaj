@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AiOutlineEye } from "react-icons/ai";
 import { AiOutlineEyeInvisible } from "react-icons/ai";
+import { signIn } from "@/lib/auth-client";
 
 interface LoginProps {
   onBack: () => void;
@@ -18,12 +19,14 @@ export default function Login({ onBack, onRegisterClick }: LoginProps) {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch("/api/auth/signin", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-      headers: { "Content-Type": "application/json" },
+    const { data, error } = await signIn.email({
+      email: email,
+      password: password,
+      rememberMe: true,
+      callbackURL: "/logout",
     });
-    console.log(await res.json());
+    console.log("my data", data);
+    console.log("error", error);
   };
 
   return (

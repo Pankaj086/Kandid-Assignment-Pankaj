@@ -6,7 +6,7 @@ import { FcGoogle } from "react-icons/fc";
 import { MdEmail } from "react-icons/md";
 import Login from "./Login";
 import Register from "./Register";
-import { signIn, useSession } from "@/lib/auth-client";
+import { signIn, useSession, signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
@@ -15,7 +15,7 @@ export default function AuthPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (session?.user) router.replace("/dashboard");
+    if (session?.user) router.replace("/logout");
   }, [session, router]);
 
   const handleGoogleLogin = async () => {
