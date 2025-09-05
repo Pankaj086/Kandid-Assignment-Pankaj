@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AiOutlineEye } from "react-icons/ai";
 import { AiOutlineEyeInvisible } from "react-icons/ai";
-
+import { signUp } from "@/lib/auth-client";
 interface RegisterProps {
   onBack: () => void;
   onLoginClick: () => void;
@@ -20,13 +20,16 @@ export default function Register({ onBack, onLoginClick }: RegisterProps) {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      body: JSON.stringify({ firstName, lastName, email, password }),
-      headers: { "Content-Type": "application/json" },
+    const { data, error } = await signUp.email({
+      name: firstName + " " + lastName,
+      email,
+      password,
+      callbackURL: "/logout",
     });
-    console.log(await res.json());
+    console.log("my data", data);
+    console.log("error", error);
   };
+  
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">

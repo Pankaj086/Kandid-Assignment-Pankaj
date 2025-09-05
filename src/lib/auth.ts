@@ -22,9 +22,10 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
   },
-
-  // Optional: also enable email/password later for the rest of the assignment
-  // emailAndPassword: { enabled: true },
+  
+  emailAndPassword: { 
+    enabled: true, 
+  }, 
 
   // Next.js cookie helpers
   plugins: [nextCookies()],
