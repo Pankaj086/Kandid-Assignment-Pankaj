@@ -6,17 +6,33 @@ import { FcGoogle } from "react-icons/fc";
 import { MdEmail } from "react-icons/md";
 import Login from "./Login";
 import Register from "./Register";
-import { signIn, useSession, signOut } from "@/lib/auth-client";
+import { signIn, useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
 export default function AuthPage() {
   const [currentView, setCurrentView] = useState<'main' | 'login' | 'register'>('main');
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (session?.user) router.replace("/logout");
-  }, [session, router]);
+    if (!isPending && session?.user) {
+      router.replace("/dashboard");
+    }
+  }, [session, isPending, router]);
+
+  // Show loading while checking session
+  if (isPending) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-gray-100">
+        <div className="text-gray-900">Loading...</div>
+      </div>
+    )
+  }
+
+  // Don't render if user is authenticated (will redirect)
+  if (session?.user) {
+    return null
+  }
 
   const handleGoogleLogin = async () => {
     signIn.social({ provider: "google" });
