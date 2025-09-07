@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useSession, signOut } from '@/lib/auth-client'
+import { useSidebarStore } from '@/stores/sidebar-store'
 import {
   ChevronLeft,
   LayoutDashboard,
@@ -75,7 +76,7 @@ const adminItems: NavItem[] = [
 ]
 
 export function Sidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const { isCollapsed, toggleCollapsed } = useSidebarStore()
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
@@ -93,7 +94,7 @@ export function Sidebar() {
   return (
     <div className={cn(
       "flex flex-col h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300",
-      isCollapsed ? "w-16" : "w-64"
+      isCollapsed ? "w-20" : "w-64"
     )}>
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
@@ -106,7 +107,7 @@ export function Sidebar() {
           )}
         </div>
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={toggleCollapsed}
           className="p-1.5 hover:bg-sidebar-accent rounded-md text-sidebar-foreground"
         >
           {isCollapsed ? <Menu className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
