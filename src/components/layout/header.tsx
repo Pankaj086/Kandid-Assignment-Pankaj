@@ -12,7 +12,7 @@ interface BreadcrumbItem {
 const pathLabels: Record<string, string> = {
   dashboard: 'Dashboard',
   leads: 'Leads',
-  campaign: 'Campaign',
+  campaigns: 'Campaigns',
   messages: 'Messages',
   'linkedin-accounts': 'LinkedIn Accounts',
   settings: 'Setting & Billing',
