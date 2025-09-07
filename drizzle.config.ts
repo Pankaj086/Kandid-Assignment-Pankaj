@@ -1,7 +1,7 @@
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
-  schema: "./src/db/auth-schema.ts", // the Better Auth generated schema will go here
+  schema: "./src/db/schema",
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
