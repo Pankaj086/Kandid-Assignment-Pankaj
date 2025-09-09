@@ -7,10 +7,10 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id?: string } }
+  { params }: { params: Promise<{ id?: string }> }
 ) {
   try {
-    const rawId = params?.id;
+    const { id: rawId } = await params;
     if (!rawId) {
       return NextResponse.json({ error: "Missing id param" }, { status: 400 });
     }

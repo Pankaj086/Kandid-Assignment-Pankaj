@@ -5,14 +5,15 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { leadId: string } }
+  { params }: { params: Promise<{ leadId: string }> }
 ) {
-  const leadId = Number(params.leadId);
+  const { leadId } = await params;
+  const leadIdNum = Number(leadId);
 
   const history = await db
     .select()
     .from(interactions)
-    .where(eq(interactions.leadId, leadId));
+    .where(eq(interactions.leadId, leadIdNum));
 
   return NextResponse.json(history);
 }

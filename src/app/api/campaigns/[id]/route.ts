@@ -6,9 +6,10 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const campaignId = Number(params.id);
+  const { id } = await params;
+  const campaignId = Number(id);
 
   const campaign = await db.query.campaigns.findFirst({
     where: eq(campaigns.id, campaignId),
