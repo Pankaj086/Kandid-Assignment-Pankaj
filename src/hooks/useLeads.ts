@@ -28,9 +28,9 @@ interface UseLeadsParams {
   limit?: number;
 }
 
-const fetchLeads = async ({ pageParam, queryKey }: { pageParam: number | null; queryKey: any[] }): Promise<LeadsResponse> => {
+const fetchLeads = async ({ pageParam, queryKey }: { pageParam: number | null; queryKey: (string | UseLeadsParams)[] }): Promise<LeadsResponse> => {
   const [, params] = queryKey;
-  const { q, status, campaignId, limit } = params;
+  const { q, status, campaignId, limit } = params as UseLeadsParams;
   
   const searchParams = new URLSearchParams();
   if (q) searchParams.set('q', q);

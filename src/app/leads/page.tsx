@@ -1,21 +1,21 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Clock, Send, MessageSquare, CheckCircle } from "lucide-react";
 import { useLeads } from "@/hooks/useLeads";
 
-interface Lead {
-  id: number;
-  name: string;
-  email: string;
-  company: string;
-  status: string;
-  lastContactDate: string | null;
-  campaignId: number;
-  campaignName: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// interface Lead {
+//   id: number;
+//   name: string;
+//   email: string;
+//   company: string;
+//   status: string;
+//   lastContactDate: string | null;
+//   campaignId: number;
+//   campaignName: string;
+//   createdAt: string;
+//   updatedAt: string;
+// }
 
 export default function LeadsPage() {
   const [searchQuery, setSearchQuery] = useState("");

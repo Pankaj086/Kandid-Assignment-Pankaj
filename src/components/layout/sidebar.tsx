@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -97,7 +96,7 @@ export function Sidebar() {
       isCollapsed ? "w-20" : "w-64"
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
+      <div className="flex items-center justify-between px-4 py-4 border-b border-sidebar-border">
         <div className={cn("flex items-center gap-2", isCollapsed && "justify-center")}>
           <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center">
             <span className="text-white font-bold text-sm">LB</span>
@@ -115,7 +114,7 @@ export function Sidebar() {
       </div>
 
       {/* User Profile */}
-      <div className="p-4 border-b border-sidebar-border">
+      <div className="px-4 py-2 border-b border-sidebar-border">
         <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
           <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
             <span className="text-gray-600 font-medium text-sm">
@@ -136,7 +135,7 @@ export function Sidebar() {
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto">
         {/* Overview Section */}
-        <div className="p-4">
+        <div className="px-4 py-2">
           {!isCollapsed && (
             <h3 className="text-xs font-medium text-sidebar-foreground/60 uppercase tracking-wider mb-3">
               Overview
@@ -172,7 +171,7 @@ export function Sidebar() {
         </div>
 
         {/* Settings Section */}
-        <div className="p-4">
+        <div className="px-4 py-2">
           {!isCollapsed && (
             <h3 className="text-xs font-medium text-sidebar-foreground/60 uppercase tracking-wider mb-3">
               Settings
@@ -204,7 +203,7 @@ export function Sidebar() {
         </div>
 
         {/* Admin Panel Section */}
-        <div className="p-4">
+        <div className="px-4 py-2">
           {!isCollapsed && (
             <h3 className="text-xs font-medium text-sidebar-foreground/60 uppercase tracking-wider mb-3">
               Admin Panel

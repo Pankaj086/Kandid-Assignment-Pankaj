@@ -1,7 +1,7 @@
 import { db } from "@/db/db";
 import { leads } from "@/db/schema/leads";
 import { campaigns } from "@/db/schema/campaigns";
-import { eq, and, or, sql, gt } from "drizzle-orm";
+import { eq, and, or, sql, gt, SQL } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     const limit = parseInt(url.searchParams.get("limit") ?? "25");
 
     // Build where clauses dynamically
-    const filters: any[] = [];
+    const filters: SQL[] = [];
     if (status) filters.push(eq(leads.status, status));
     if (campaignId) filters.push(eq(leads.campaignId, Number(campaignId)));
 
@@ -26,13 +26,14 @@ export async function GET(req: Request) {
     // Add search functionality using ILIKE for case-insensitive search
     if (q) {
       const searchTerm = `%${q}%`;
-      filters.push(
-        or(
-          sql`${leads.name} ILIKE ${searchTerm}`,
-          sql`${leads.email} ILIKE ${searchTerm}`,
-          sql`${leads.company} ILIKE ${searchTerm}`
-        )
+      const searchCondition = or(
+        sql`${leads.name} ILIKE ${searchTerm}`,
+        sql`${leads.email} ILIKE ${searchTerm}`,
+        sql`${leads.company} ILIKE ${searchTerm}`
       );
+      if (searchCondition) {
+        filters.push(searchCondition);
+      }
     }
 
     const data = await db
