@@ -3,12 +3,16 @@
 import { useState, useCallback, useMemo } from "react";
 import { Clock, Send, MessageSquare, CheckCircle } from "lucide-react";
 import { useLeads } from "@/hooks/useLeads";
+import { useLeadSidebarStore } from "@/stores/leadSidebarStore";
 import { Skeleton } from "@/components/ui/skeleton";
+import LeadProfileSidebar from "@/components/leadsSidebar/LeadProfileSidebar";
 
 export default function LeadsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [campaignFilter, setCampaignFilter] = useState("");
+  
+  const { openSidebar } = useLeadSidebarStore();
 
   const {
     data,
@@ -129,6 +133,10 @@ export default function LeadsPage() {
         ))}
       </div>
     );
+  };
+
+  const handleLeadClick = (leadId: number) => {
+    openSidebar(leadId);
   };
 
   if (status === 'pending') {
@@ -276,7 +284,11 @@ export default function LeadsPage() {
               </colgroup>
               <tbody className="bg-white divide-y divide-gray-200">
                 {leads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-gray-50 cursor-pointer">
+                  <tr 
+                    key={lead.id} 
+                    className="hover:bg-gray-50 cursor-pointer"
+                    onClick={() => handleLeadClick(lead.id)}
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -330,6 +342,9 @@ export default function LeadsPage() {
           </div>
         </div>
       </div>
+      
+      {/* Lead Profile Sidebar */}
+      <LeadProfileSidebar />
     </div>
   );
 }
