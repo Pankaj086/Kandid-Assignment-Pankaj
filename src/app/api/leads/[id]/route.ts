@@ -7,28 +7,45 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: { id?: string } }
 ) {
-  const leadId = Number(params.id);
+  try {
+    const rawId = params?.id;
+    if (!rawId) {
+      return NextResponse.json({ error: "Missing id param" }, { status: 400 });
+    }
 
-  const lead = await db
-    .select({
-      id: leads.id,
-      name: leads.name,
-      email: leads.email,
-      company: leads.company,
-      status: leads.status,
-      lastContactDate: leads.lastContactDate,
-      campaignName: campaigns.name,
-    })
-    .from(leads)
-    .leftJoin(campaigns, eq(leads.campaignId, campaigns.id))
-    .where(eq(leads.id, leadId));
+    const leadId = Number(rawId);
+    if (Number.isNaN(leadId)) {
+      return NextResponse.json({ error: "Invalid id param" }, { status: 400 });
+    }
 
-  const history = await db
-    .select()
-    .from(interactions)
-    .where(eq(interactions.leadId, leadId));
+    const leadRows = await db
+      .select({
+        id: leads.id,
+        name: leads.name,
+        email: leads.email,
+        company: leads.company,
+        status: leads.status,
+        lastContactDate: leads.lastContactDate,
+        campaignName: campaigns.name,
+      })
+      .from(leads)
+      .leftJoin(campaigns, eq(leads.campaignId, campaigns.id))
+      .where(eq(leads.id, leadId));
 
-  return NextResponse.json({ ...lead[0], interactions: history });
+    if (!leadRows || leadRows.length === 0) {
+      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
+    }
+
+    const history = await db
+      .select()
+      .from(interactions)
+      .where(eq(interactions.leadId, leadId))
+
+    return NextResponse.json({ ...leadRows[0], interactions: history });
+  } catch (err) {
+    console.error("GET /api/leads/[id] error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
