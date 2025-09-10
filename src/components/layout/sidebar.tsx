@@ -1,10 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useSession, signOut } from '@/lib/auth-client'
 import { useSidebarStore } from '@/stores/sidebar-store'
+import { Spinner } from '@/components/ui/shadcn-io/spinner/index'
 import {
   ChevronLeft,
   LayoutDashboard,
@@ -79,15 +81,23 @@ export function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const { data: session } = useSession()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogout = async () => {
-    await signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          router.push("/login");
+    setIsLoggingOut(true)
+    try {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/login");
+          },
         },
-      },
-    });
+      });
+    } catch (error) {
+      console.error("Logout error:", error)
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   return (
@@ -156,8 +166,7 @@ export function Sidebar() {
                       ? "bg-sidebar-accent text-sidebar-accent-foreground" 
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     isCollapsed && "justify-center px-2"
-                  )}
-                >
+                  )}>
                   <Icon className="h-4 w-4 flex-shrink-0" />
                   {!isCollapsed && (
                     <>
@@ -192,8 +201,7 @@ export function Sidebar() {
                       ? "bg-sidebar-accent text-sidebar-accent-foreground" 
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     isCollapsed && "justify-center px-2"
-                  )}
-                >
+                  )}>
                   <Icon className="h-4 w-4 flex-shrink-0" />
                   {!isCollapsed && <span>{item.title}</span>}
                 </Link>
@@ -224,8 +232,7 @@ export function Sidebar() {
                       ? "bg-sidebar-accent text-sidebar-accent-foreground" 
                       : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     isCollapsed && "justify-center px-2"
-                  )}
-                >
+                  )}>
                   <Icon className="h-4 w-4 flex-shrink-0" />
                   {!isCollapsed && <span>{item.title}</span>}
                 </Link>
@@ -257,10 +264,15 @@ export function Sidebar() {
         {!isCollapsed && (
           <button 
             onClick={handleLogout}
-            className="flex items-center gap-2 w-full mt-3 px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent rounded-md transition-colors cursor-pointer"
+            disabled={isLoggingOut}
+            className="flex items-center gap-2 w-full mt-3 px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <LogOut className="h-4 w-4" />
-            <span>Logout</span>
+            {isLoggingOut ? (
+              <Spinner className="h-4 w-4" />
+            ) : (
+              <LogOut className="h-4 w-4" />
+            )}
+            <span>{isLoggingOut ? "Logging out..." : "Logout"}</span>
           </button>
         )}
       </div>
