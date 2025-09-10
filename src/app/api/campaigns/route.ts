@@ -1,11 +1,14 @@
 import { db } from "@/db/db";
 import { campaigns } from "@/db/schema/campaigns";
 import { leads } from "@/db/schema/leads";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, ilike } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
-export async function GET() {
-  const data = await db
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const search = searchParams.get('search');
+
+  const baseQuery = db
     .select({
       id: campaigns.id,
       name: campaigns.name,
@@ -19,8 +22,11 @@ export async function GET() {
       `,
     })
     .from(campaigns)
-    .leftJoin(leads, eq(leads.campaignId, campaigns.id))
-    .groupBy(campaigns.id);
+    .leftJoin(leads, eq(leads.campaignId, campaigns.id));
+
+  const data = search 
+    ? await baseQuery.where(ilike(campaigns.name, `%${search}%`)).groupBy(campaigns.id)
+    : await baseQuery.groupBy(campaigns.id);
 
   return NextResponse.json(data);
 }

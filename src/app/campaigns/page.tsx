@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { useRouter } from 'next/navigation';
 import { User, Clock, X, UserCheck, MessageSquare } from 'lucide-react';
@@ -14,11 +14,22 @@ const statusColors = {
 };
 
 export default function CampaignsPage() {
-  const { data: campaigns, isLoading, error } = useCampaigns();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const { data: campaigns, isLoading, error } = useCampaigns(debouncedSearchTerm);
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const router = useRouter();
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   if (isLoading) {
     return <CampaignsTableSkeleton />;
@@ -83,6 +94,8 @@ export default function CampaignsPage() {
           <input
             type="text"
             placeholder="Search campaigns..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
