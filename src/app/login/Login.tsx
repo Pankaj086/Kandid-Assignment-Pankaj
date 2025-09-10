@@ -23,7 +23,7 @@ export default function Login({ onBack, onRegisterClick }: LoginProps) {
       email: email,
       password: password,
       rememberMe: true,
-      callbackURL: "/logout",
+      callbackURL: "/dashboard",
     });
     console.log("my data", data);
     console.log("error", error);

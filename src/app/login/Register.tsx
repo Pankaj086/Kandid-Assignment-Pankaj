@@ -24,7 +24,7 @@ export default function Register({ onBack, onLoginClick }: RegisterProps) {
       name: firstName + " " + lastName,
       email,
       password,
-      callbackURL: "/logout",
+      callbackURL: "/dashboard",
     });
     console.log("my data", data);
     console.log("error", error);

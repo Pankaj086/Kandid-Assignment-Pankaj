@@ -10,6 +10,7 @@ A modern Next.js application for managing candidates, built with TypeScript and 
 - Document management
 - Real-time notifications
 - Role-based access control
+- Google OAuth authentication
 
 ## 📋 Prerequisites
 
@@ -17,6 +18,7 @@ Before you begin, ensure you have the following installed:
 - Node.js (v18.0.0 or higher)
 - npm, yarn, pnpm, or bun
 - Git
+- PostgreSQL database access
 
 ## 🛠️ Setup Instructions
 
@@ -41,22 +43,23 @@ bun install
 
 ### 3. Environment Configuration
 
-Create a `.env.local` file in the root directory:
+Create a `.env` file in the root directory:
 
 ```env
-# Database
-DATABASE_URL="your-database-connection-string"
+# Better Auth
+BETTER_AUTH_SECRET=your-better-auth-secret
+BETTER_AUTH_URL=http://localhost:3000 # Base URL of your app
 
-# Authentication
-NEXTAUTH_SECRET="your-nextauth-secret"
-NEXTAUTH_URL="http://localhost:3000"
+# Google OAuth
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# External APIs
-API_BASE_URL="your-api-base-url"
-
-# File Storage
-UPLOAD_DIR="./uploads"
-MAX_FILE_SIZE="5242880" # 5MB
+# PostgreSQL Database
+PGUSER=your-pg-username
+PGHOST=your-pg-host
+PGDATABASE=your-pg-database
+PGPASSWORD=your-pg-password
+PGPORT=your-pg-port
 ```
 
 ### 4. Database Setup
@@ -91,7 +94,14 @@ http://localhost:3000/api
 ```
 
 ### Authentication
-All API endpoints require authentication via JWT tokens.
+All API endpoints require authentication via Better Auth. The application supports Google OAuth for user authentication.
+
+#### Authentication Endpoints
+- `POST /api/auth/sign-in` - Sign in with credentials
+- `POST /api/auth/sign-up` - Create new account
+- `GET /api/auth/session` - Get current session
+- `POST /api/auth/sign-out` - Sign out user
+- `GET /api/auth/callback/google` - Google OAuth callback
 
 #### Endpoints
 
@@ -120,17 +130,7 @@ All API endpoints require authentication via JWT tokens.
 ```bash
 POST /api/candidates
 Content-Type: application/json
-
-{
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "john.doe@example.com",
-  "phone": "+1234567890",
-  "skills": ["JavaScript", "React", "Node.js"],
-  "experience": 5
-}
 ```
-
 ## 🗄️ Database Schema
 
 ### Tables
@@ -194,6 +194,10 @@ CREATE TABLE interviews (
 - One application can have multiple interviews
 - One user (interviewer) can conduct multiple interviews
 
+### PostgreSQL Configuration
+
+The application uses PostgreSQL as the primary database. Ensure your PostgreSQL instance is running and accessible with the credentials provided in the `.env` file.
+
 ## 🚀 Deployment Instructions
 
 ### Vercel Deployment (Recommended)
@@ -209,11 +213,15 @@ CREATE TABLE interviews (
    ```
 
 2. **Environment Variables**
-   Set the following in Vercel dashboard:
-   - `DATABASE_URL`
-   - `NEXTAUTH_SECRET`
-   - `NEXTAUTH_URL`
-   - `API_BASE_URL`
+   - `BETTER_AUTH_SECRET`
+   - `BETTER_AUTH_URL`
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+   - `PGUSER`
+   - `PGHOST`
+   - `PGDATABASE`
+   - `PGPASSWORD`
+   - `PGPORT`
 
 ### Docker Deployment
 
@@ -225,8 +233,15 @@ CREATE TABLE interviews (
 2. **Run Container**
    ```bash
    docker run -p 3000:3000 \
-     -e DATABASE_URL="your-database-url" \
-     -e NEXTAUTH_SECRET="your-secret" \
+     -e BETTER_AUTH_SECRET="your-secret" \
+     -e BETTER_AUTH_URL="http://localhost:3000" \
+     -e GOOGLE_CLIENT_ID="your-google-client-id" \
+     -e GOOGLE_CLIENT_SECRET="your-google-client-secret" \
+     -e PGUSER="your-pg-user" \
+     -e PGHOST="your-pg-host" \
+     -e PGDATABASE="your-pg-database" \
+     -e PGPASSWORD="your-pg-password" \
+     -e PGPORT="your-pg-port" \
      kandid
    ```
 
