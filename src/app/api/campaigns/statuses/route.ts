@@ -1,6 +1,5 @@
 import { db } from "@/db/db";
 import { campaigns } from "@/db/schema/campaigns";
-import { sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export async function GET() {
