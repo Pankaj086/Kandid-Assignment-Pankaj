@@ -21,8 +21,13 @@ interface CampaignDetail extends Campaign {
   }>;
 }
 
-const fetchCampaigns = async (): Promise<Campaign[]> => {
-  const response = await fetch('/api/campaigns');
+const fetchCampaigns = async (searchTerm?: string): Promise<Campaign[]> => {
+  const url = new URL('/api/campaigns', window.location.origin);
+  if (searchTerm) {
+    url.searchParams.set('search', searchTerm);
+  }
+  
+  const response = await fetch(url);
   
   if (!response.ok) {
     throw new Error('Failed to fetch campaigns');
@@ -41,10 +46,10 @@ const fetchCampaignById = async (campaignId: number): Promise<CampaignDetail> =>
   return response.json();
 };
 
-export const useCampaigns = () => {
+export const useCampaigns = (searchTerm?: string) => {
   return useQuery({
-    queryKey: ['campaigns'],
-    queryFn: fetchCampaigns,
+    queryKey: ['campaigns', searchTerm],
+    queryFn: () => fetchCampaigns(searchTerm),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
