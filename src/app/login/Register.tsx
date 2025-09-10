@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/shadcn-io/spinner/index";
 import { AiOutlineEye } from "react-icons/ai";
 import { AiOutlineEyeInvisible } from "react-icons/ai";
 import { signUp } from "@/lib/auth-client";
+import toast from "react-hot-toast";
+
 interface RegisterProps {
   onBack: () => void;
   onLoginClick: () => void;
@@ -17,19 +20,35 @@ export default function Register({ onBack, onLoginClick }: RegisterProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data, error } = await signUp.email({
-      name: firstName + " " + lastName,
-      email,
-      password,
-      callbackURL: "/dashboard",
-    });
-    console.log("my data", data);
-    console.log("error", error);
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await signUp.email({
+        name: firstName + " " + lastName,
+        email,
+        password,
+        callbackURL: "/dashboard",
+      });
+      
+      if (error) {
+        toast.error(error.message || "Registration failed. Please try again.");
+      } else if (data) {
+        toast.success("Account created successfully!");
+      }
+      
+      console.log("my data", data);
+      console.log("error", error);
+    } catch (err) {
+      toast.error("An unexpected error occurred. Please try again.");
+      console.error("Registration error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
-  
 
   return (
     <div className="flex h-screen items-center justify-center bg-gray-100">
@@ -105,9 +124,13 @@ export default function Register({ onBack, onLoginClick }: RegisterProps) {
 
           <Button 
             type="submit" 
-            className="w-full h-10 bg-blue-700 hover:bg-blue-800 text-white font-medium mt-6 rounded-full cursor-pointer"
+            disabled={isLoading}
+            className="w-full h-10 bg-blue-700 hover:bg-blue-800 text-white font-medium mt-6 rounded-full cursor-pointer disabled:opacity-50"
           >
-            Create my account
+            <div className="flex items-center justify-center gap-2">
+              {isLoading && <Spinner className="w-4 h-4" />}
+              <span>{isLoading ? "Creating account..." : "Create my account"}</span>
+            </div>
           </Button>
         </form>
 

@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/shadcn-io/spinner/index";
 import { AiOutlineEye } from "react-icons/ai";
 import { AiOutlineEyeInvisible } from "react-icons/ai";
 import { signIn } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 interface LoginProps {
   onBack: () => void;
@@ -16,17 +18,34 @@ export default function Login({ onBack, onRegisterClick }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data, error } = await signIn.email({
-      email: email,
-      password: password,
-      rememberMe: true,
-      callbackURL: "/dashboard",
-    });
-    console.log("my data", data);
-    console.log("error", error);
+    setIsLoading(true);
+    
+    try {
+      const { data, error } = await signIn.email({
+        email: email,
+        password: password,
+        rememberMe: true,
+        callbackURL: "/dashboard",
+      });
+      
+      if (error) {
+        toast.error(error.message || "Login failed. Please check your credentials.");
+      } else if (data) {
+        toast.success("Login Successful!");
+      }
+      
+      console.log("my data", data);
+      console.log("error", error);
+    } catch (err) {
+      toast.error("An unexpected error occurred. Please try again.");
+      console.error("Login error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -80,9 +99,13 @@ export default function Login({ onBack, onRegisterClick }: LoginProps) {
 
           <Button 
             type="submit" 
-            className="w-full h-10 bg-blue-700 hover:bg-blue-800 text-white font-medium mt-6 rounded-full cursor-pointer"
+            disabled={isLoading}
+            className="w-full h-10 bg-blue-700 hover:bg-blue-800 text-white font-medium mt-6 rounded-full cursor-pointer disabled:opacity-50"
           >
-            Login
+            <div className="flex items-center justify-center gap-2">
+              {isLoading && <Spinner className="w-4 h-4" />}
+              <span>{isLoading ? "Logging in..." : "Login"}</span>
+            </div>
           </Button>
         </form>
 

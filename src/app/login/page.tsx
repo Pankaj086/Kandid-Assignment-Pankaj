@@ -2,15 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/shadcn-io/spinner/index";
 import { FcGoogle } from "react-icons/fc";
 import { MdEmail } from "react-icons/md";
 import Login from "./Login";
 import Register from "./Register";
 import { signIn, useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function AuthPage() {
   const [currentView, setCurrentView] = useState<'main' | 'login' | 'register'>('main');
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { data: session, isPending } = useSession();
   const router = useRouter();
 
@@ -35,11 +39,22 @@ export default function AuthPage() {
   }
 
   const handleGoogleLogin = async () => {
-    signIn.social({ provider: "google" });
+    setIsGoogleLoading(true);
+    try {
+      await signIn.social({ provider: "google" });
+      toast.success("Connecting with Google...");
+    } catch (error) {
+      toast.error("Failed to connect with Google. Please try again.");
+      console.error("Google login error:", error);
+      setIsGoogleLoading(false);
+    }
   };
 
   const handleEmailLogin = () => {
+    setIsEmailLoading(true);
     setCurrentView('login');
+    // Reset loading state after view change
+    setTimeout(() => setIsEmailLoading(false), 100);
   };
 
   const handleRegister = () => {
@@ -73,22 +88,29 @@ export default function AuthPage() {
         <div className="space-y-3">
           <Button 
             onClick={handleGoogleLogin}
+            disabled={isGoogleLoading}
             variant="outline" 
-            className="w-full h-10 border-0 border-t-2 border-gray-300 bg-white hover:bg-gray-50 rounded-full cursor-pointer"
+            className="w-full h-10 border-0 border-t-2 border-gray-300 bg-white hover:bg-gray-50 rounded-full cursor-pointer disabled:opacity-50"
           >
             <div className="flex items-center justify-center gap-3">
               <FcGoogle size={20} />
-              <span className="text-gray-700 font-medium">Continue with Google</span>
+              <span className="text-gray-700 font-medium">
+                {isGoogleLoading ? "Connecting..." : "Continue with Google"}
+              </span>
             </div>
           </Button>
           
           <Button 
             onClick={handleEmailLogin}
-            className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium cursor-pointer rounded-full"
+            disabled={isEmailLoading}
+            className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium cursor-pointer rounded-full disabled:opacity-50"
           >
             <div className="flex items-center justify-center gap-5">
+              {isEmailLoading && <Spinner className="w-4 h-4" />}
               <MdEmail size={20} color="white"/>
-              <span className="text-white font-medium">Login with Email</span>
+              <span className="text-white font-medium">
+                {isEmailLoading ? "Loading..." : "Login with Email"}
+              </span>
             </div>
           </Button>
         </div>
