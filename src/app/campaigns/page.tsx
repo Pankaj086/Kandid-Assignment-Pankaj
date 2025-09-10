@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useCampaigns } from '@/hooks/useCampaigns';
 import { useRouter } from 'next/navigation';
 import { User, Clock, X, UserCheck, MessageSquare } from 'lucide-react';
+import { CampaignsTableSkeleton } from '@/components/campaigns/CampaignsTableSkeleton';
 
 const statusColors = {
   Active: 'bg-green-100 text-green-800',
@@ -19,7 +20,10 @@ export default function CampaignsPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const router = useRouter();
 
-  if (isLoading) return <div className="p-6">Loading campaigns...</div>;
+  if (isLoading) {
+    return <CampaignsTableSkeleton />;
+  }
+
   if (error) return <div className="p-6 text-red-600">Error loading campaigns</div>;
 
   const filteredCampaigns = campaigns?.filter(campaign => 

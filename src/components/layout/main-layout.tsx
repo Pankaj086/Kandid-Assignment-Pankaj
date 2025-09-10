@@ -4,6 +4,7 @@ import { useSession } from '@/lib/auth-client'
 import { usePathname } from 'next/navigation'
 import { Sidebar } from './sidebar'
 import { Header } from './header'
+import { Spinner } from '@/components/ui/shadcn-io/spinner'
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -21,7 +22,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   if (isPending) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="text-foreground">Loading...</div>
+        <Spinner className="text-gray-500" size={64} />
       </div>
     )
   }
