@@ -1,17 +1,29 @@
-# Kandid - Candidate Management System
+# Kandid - Lead & Campaign Management Platform
 
-A modern Next.js application for managing candidates, built with TypeScript, Drizzle ORM, and Better Auth.
+A modern Next.js application for managing leads and campaigns, built with TypeScript, Drizzle ORM, and Better Auth. Replicated from the Linkbird.ai platform interface.
 
 ## 🚀 Features
 
-- **Candidate Profile Management** - Complete candidate information tracking
-- **Application Tracking** - Monitor application status and progress
-- **Interview Scheduling** - Schedule and manage interviews
-- **Document Management** - Handle resumes and documents
-- **Real-time Notifications** - Stay updated with application changes
-- **Role-based Access Control** - Secure access management
-- **Google OAuth Authentication** - Seamless authentication via Better Auth
-- **Modern UI** - Built with Tailwind CSS and Shadcn/UI components
+- **Authentication System** - Complete auth flow with Better Auth
+  - Email/password login and registration
+  - Google OAuth integration
+  - Protected routes middleware
+  - Session management
+- **Lead Management** - Comprehensive lead tracking and management
+  - Infinitely scrollable leads table
+  - Lead detail side sheets with full information
+  - Search and filter capabilities
+  - Status tracking (Pending, Contacted, Responded, Converted)
+- **Campaign Management** - Campaign overview and analytics
+  - Campaign table with status tracking
+  - Progress indicators and success rates
+  - Campaign statistics and metrics
+  - Status filters (Draft, Active, Paused, Completed)
+- **Modern UI** - Professional interface matching Linkbird.ai design
+  - Collapsible sidebar navigation
+  - Responsive design with Tailwind CSS
+  - shadcn/ui components
+  - Dark/light theme support
 
 ## 📋 Prerequisites
 
@@ -101,13 +113,13 @@ http://localhost:3000/api
 ```
 
 ### Authentication
-The application uses **Better Auth** for authentication with Google OAuth support. All protected routes require valid session.
+The application uses **Better Auth** for authentication with both email/password and Google OAuth support. All protected routes require valid session.
 
 #### Authentication Flow
-1. User clicks "Sign in with Google"
-2. Redirected to Google OAuth
-3. After approval, redirected back with session
-4. Session stored securely with Better Auth
+1. User can sign up with email/password or sign in with Google
+2. After authentication, redirected to dashboard
+3. Session stored securely with Better Auth
+4. Protected routes automatically redirect to login if unauthenticated
 
 #### Authentication Endpoints
 ```
@@ -116,55 +128,48 @@ GET  /api/auth/[...all]  - Better Auth handler (handles all auth routes)
 
 **Better Auth Routes:**
 - `/api/auth/sign-in/google` - Initiate Google OAuth
+- `/api/auth/sign-in/email` - Email/password sign in
+- `/api/auth/sign-up/email` - Email/password registration
 - `/api/auth/callback/google` - OAuth callback
 - `/api/auth/session` - Get current session
 - `/api/auth/sign-out` - Sign out user
 
 ### API Endpoints
 
-#### Candidates
+#### Leads
 ```bash
-GET    /api/candidates           # Get all candidates (paginated)
-POST   /api/candidates           # Create new candidate
-GET    /api/candidates/[id]      # Get candidate by ID
-PUT    /api/candidates/[id]      # Update candidate
-DELETE /api/candidates/[id]      # Delete candidate
+GET    /api/leads                # Get all leads (infinite scroll)
+POST   /api/leads                # Create new lead
+GET    /api/leads/[id]           # Get lead details
+PUT    /api/leads/[id]           # Update lead
+DELETE /api/leads/[id]           # Delete lead
+GET    /api/leads/search         # Search leads
 ```
 
-#### Applications
+#### Campaigns
 ```bash
-GET    /api/applications         # Get all applications
-POST   /api/applications         # Submit new application
-GET    /api/applications/[id]    # Get application details
-PUT    /api/applications/[id]    # Update application
-DELETE /api/applications/[id]    # Delete application
-```
-
-#### Interviews
-```bash
-GET    /api/interviews           # Get interviews
-POST   /api/interviews           # Schedule interview
-GET    /api/interviews/[id]      # Get interview details
-PUT    /api/interviews/[id]      # Update interview
-DELETE /api/interviews/[id]      # Cancel interview
+GET    /api/campaigns            # Get all campaigns
+POST   /api/campaigns            # Create new campaign
+GET    /api/campaigns/[id]       # Get campaign details
+PUT    /api/campaigns/[id]       # Update campaign
+DELETE /api/campaigns/[id]       # Delete campaign
+GET    /api/campaigns/stats      # Get campaign statistics
 ```
 
 ### Request/Response Examples
 
-#### Create Candidate
+#### Create Lead
 ```bash
-POST /api/candidates
+POST /api/leads
 Content-Type: application/json
 Authorization: Bearer <session-token>
 
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "email": "john.doe@example.com",
-  "phone": "+1-555-0123",
-  "skills": ["JavaScript", "React", "Node.js"],
-  "experience": 3,
-  "resumeUrl": "https://example.com/resume.pdf"
+  "name": "John Doe",
+  "email": "john.doe@company.com",
+  "company": "Tech Corp",
+  "campaignId": "uuid-here",
+  "status": "pending"
 }
 ```
 
@@ -174,13 +179,12 @@ Authorization: Bearer <session-token>
   "success": true,
   "data": {
     "id": "uuid-here",
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "john.doe@example.com",
-    "phone": "+1-555-0123",
-    "skills": ["JavaScript", "React", "Node.js"],
-    "experience": 3,
-    "resumeUrl": "https://example.com/resume.pdf",
+    "name": "John Doe",
+    "email": "john.doe@company.com",
+    "company": "Tech Corp",
+    "campaignId": "uuid-here",
+    "status": "pending",
+    "lastContactDate": null,
     "createdAt": "2024-01-01T00:00:00.000Z",
     "updatedAt": "2024-01-01T00:00:00.000Z"
   }
@@ -193,7 +197,7 @@ The application uses **Drizzle ORM** with PostgreSQL for robust data management.
 
 ### Schema Overview
 
-#### Users Table
+#### Users Table (Better Auth)
 ```sql
 CREATE TABLE users (
   id TEXT PRIMARY KEY,
@@ -220,67 +224,32 @@ CREATE TABLE sessions (
 );
 ```
 
-#### Accounts Table (OAuth)
+#### Campaigns Table
 ```sql
-CREATE TABLE accounts (
-  id TEXT PRIMARY KEY,
-  account_id TEXT NOT NULL,
-  provider_id TEXT NOT NULL,
-  user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-  access_token TEXT,
-  refresh_token TEXT,
-  id_token TEXT,
-  access_token_expires_at TIMESTAMP,
-  refresh_token_expires_at TIMESTAMP,
-  scope TEXT,
-  password TEXT,
+CREATE TABLE campaigns (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'paused', 'completed')),
+  total_leads INTEGER DEFAULT 0,
+  successful_leads INTEGER DEFAULT 0,
+  response_rate DECIMAL(5,2) DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  user_id TEXT REFERENCES users(id) ON DELETE CASCADE
 );
 ```
 
-#### Candidates Table
+#### Leads Table
 ```sql
-CREATE TABLE candidates (
+CREATE TABLE leads (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-  first_name TEXT NOT NULL,
-  last_name TEXT NOT NULL,
-  email TEXT UNIQUE NOT NULL,
-  phone TEXT,
-  skills TEXT[],
-  experience INTEGER DEFAULT 0,
-  resume_url TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### Applications Table
-```sql
-CREATE TABLE applications (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-  candidate_id TEXT REFERENCES candidates(id) ON DELETE CASCADE,
-  position TEXT NOT NULL,
-  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'reviewing', 'interviewed', 'accepted', 'rejected')),
-  applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  company TEXT,
+  campaign_id TEXT REFERENCES campaigns(id) ON DELETE CASCADE,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'contacted', 'responded', 'converted')),
+  last_contact_date TIMESTAMP,
   notes TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-#### Interviews Table
-```sql
-CREATE TABLE interviews (
-  id TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-  application_id TEXT REFERENCES applications(id) ON DELETE CASCADE,
-  interviewer_id TEXT REFERENCES users(id),
-  scheduled_at TIMESTAMP NOT NULL,
-  duration INTEGER DEFAULT 60,
-  location TEXT,
-  type TEXT DEFAULT 'technical' CHECK (type IN ('technical', 'behavioral', 'final')),
-  notes TEXT,
-  status TEXT DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'completed', 'cancelled', 'rescheduled')),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -338,59 +307,6 @@ npm run db:migrate
    npx drizzle-kit push:pg --config=drizzle.config.ts
    ```
 
-### Docker Deployment
-
-1. **Create Dockerfile**
-   ```dockerfile
-   FROM node:18-alpine
-   WORKDIR /app
-   COPY package*.json ./
-   RUN npm ci --only=production
-   COPY . .
-   RUN npm run build
-   EXPOSE 3000
-   CMD ["npm", "start"]
-   ```
-
-2. **Build and Run**
-   ```bash
-   # Build image
-   docker build -t kandid .
-   
-   # Run container
-   docker run -p 3000:3000 \
-     -e BETTER_AUTH_SECRET="your-secret" \
-     -e BETTER_AUTH_URL="http://localhost:3000" \
-     -e GOOGLE_CLIENT_ID="your-client-id" \
-     -e GOOGLE_CLIENT_SECRET="your-client-secret" \
-     -e PGUSER="postgres" \
-     -e PGHOST="host.docker.internal" \
-     -e PGDATABASE="kandid" \
-     -e PGPASSWORD="password" \
-     -e PGPORT="5432" \
-     kandid
-   ```
-
-### Production Server Setup
-
-1. **Build Application**
-   ```bash
-   npm run build
-   ```
-
-2. **Start Production Server**
-   ```bash
-   npm start
-   ```
-
-3. **Process Manager (PM2)**
-   ```bash
-   npm install -g pm2
-   pm2 start npm --name "kandid" -- start
-   pm2 startup
-   pm2 save
-   ```
-
 ## 🧪 Testing
 
 ```bash
@@ -402,9 +318,6 @@ npm run test:watch
 
 # Run tests with coverage
 npm run test:coverage
-
-# Run e2e tests (if configured)
-npm run test:e2e
 
 # Type checking
 npm run type-check
@@ -421,24 +334,36 @@ kandid/
 │   ├── app/                    # Next.js App Router
 │   │   ├── api/               # API routes
 │   │   │   ├── auth/          # Better Auth routes
-│   │   │   ├── candidates/    # Candidate API
-│   │   │   ├── applications/  # Application API
-│   │   │   └── interviews/    # Interview API
-│   │   ├── candidates/        # Candidate pages
-│   │   ├── applications/      # Application pages
-│   │   ├── interviews/        # Interview pages
+│   │   │   ├── leads/         # Leads API
+│   │   │   └── campaigns/     # Campaigns API
+│   │   ├── (auth)/           # Authentication pages
+│   │   │   ├── login/        # Login page
+│   │   │   └── register/     # Registration page
+│   │   ├── (dashboard)/      # Protected dashboard routes
+│   │   │   ├── leads/        # Leads management
+│   │   │   ├── campaigns/    # Campaign management
+│   │   │   └── settings/     # Settings page
 │   │   ├── globals.css        # Global styles
 │   │   ├── layout.tsx         # Root layout
-│   │   └── page.tsx           # Home page
+│   │   └── page.tsx           # Landing/redirect page
 │   ├── components/            # Reusable UI components
-│   │   ├── ui/               # Shadcn/UI components
-│   │   ├── forms/            # Form components
-│   │   └── layout/           # Layout components
+│   │   ├── ui/               # shadcn/ui components
+│   │   ├── auth/             # Authentication components
+│   │   ├── leads/            # Lead-specific components
+│   │   ├── campaigns/        # Campaign-specific components
+│   │   └── layout/           # Layout components (Sidebar, Header)
 │   ├── lib/                   # Utilities and configurations
 │   │   ├── auth.ts           # Better Auth config
 │   │   ├── db.ts             # Database connection
 │   │   ├── validations.ts    # Zod schemas
 │   │   └── utils.ts          # Utility functions
+│   ├── hooks/                # Custom React hooks
+│   │   ├── use-leads.ts      # TanStack Query hooks for leads
+│   │   └── use-campaigns.ts  # TanStack Query hooks for campaigns
+│   ├── stores/               # Zustand stores
+│   │   ├── sidebar.ts        # Sidebar state
+│   │   ├── leads.ts          # Lead selection state
+│   │   └── ui.ts             # UI state (modals, sheets)
 │   ├── types/                # TypeScript definitions
 │   └── drizzle/              # Database schema
 ├── public/                   # Static assets
@@ -450,22 +375,58 @@ kandid/
 └── package.json             # Dependencies and scripts
 ```
 
-## 🔧 Configuration Files
+## 🛠️ Tech Stack
 
-### Next.js Configuration
-- Supports TypeScript out of the box
-- Configured for Better Auth
-- Optimized for production builds
+- **Next.js 15+** - React framework with App Router
+- **Tailwind CSS + shadcn/ui** - Styling and component library
+- **PostgreSQL + Drizzle ORM** - Database and type-safe ORM
+- **Better Auth** - Authentication (credentials + Google OAuth)
+- **TanStack Query** - Server state management
+- **Zustand** - Client-side state management
+- **TypeScript** - Type safety throughout
 
-### Drizzle Configuration
-- PostgreSQL adapter
-- Schema introspection
-- Migration support
+## ✨ Key Features Implementation
 
-### Better Auth Configuration
-- Google OAuth provider
+### Authentication System
+- Complete Better Auth integration
+- Email/password and Google OAuth
+- Protected routes middleware
 - Session management
-- Secure cookie handling
+- Clean, responsive UI
+
+### Leads Management
+- Infinitely scrollable table
+- Lead detail side sheets
+- Search and filter functionality
+- Status tracking and updates
+- Smooth animations and interactions
+
+### Campaign Management
+- Campaign overview table
+- Progress indicators and statistics
+- Success rate calculations
+- Status management
+- Visual progress bars
+
+### UI/UX Excellence
+- Collapsible sidebar navigation
+- Professional Linkbird.ai design replication
+- Responsive across all devices
+- Loading states and error handling
+- Accessibility considerations
+
+## 🎯 Assignment Completion
+
+This project fulfills all requirements from the Kandid Full Stack Developer internship assignment:
+
+✅ **Authentication System** - Better Auth with email/password + Google OAuth  
+✅ **Application Layout** - Collapsible sidebar with navigation  
+✅ **Leads Section** - Complete leads management with side sheets  
+✅ **Campaigns Section** - Campaign table with statistics  
+✅ **Technical Requirements** - Next.js 15, Drizzle ORM, TanStack Query, Zustand  
+✅ **Database Schema** - Proper schema design with relationships  
+✅ **Performance** - Optimized queries, infinite scrolling, proper state management  
+✅ **Design** - Linkbird.ai UI replication with shadcn/ui components  
 
 ## 🤝 Contributing
 
@@ -484,13 +445,6 @@ kandid/
    ```
 5. **Open Pull Request**
 
-### Development Guidelines
-- Follow TypeScript best practices
-- Use Drizzle ORM for database operations
-- Implement proper error handling
-- Add tests for new features
-- Update documentation
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -499,44 +453,23 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Common Issues
 
-1. **Database Connection Issues**
-   - Verify PostgreSQL is running
-   - Check environment variables
-   - Ensure database exists
-
-2. **Authentication Problems**
-   - Verify Google OAuth credentials
+1. **Authentication Issues**
+   - Verify Google OAuth credentials in Google Cloud Console
    - Check BETTER_AUTH_URL matches your domain
-   - Ensure BETTER_AUTH_SECRET is set
+   - Ensure BETTER_AUTH_SECRET is properly set
 
-3. **Build Errors**
+2. **Database Connection Issues**
+   - Verify PostgreSQL is running
+   - Check all database environment variables
+   - Ensure database exists and schema is pushed
+
+3. **Build/Runtime Errors**
    - Clear `.next` folder and rebuild
    - Check TypeScript errors
    - Verify all dependencies are installed
 
-### Getting Help
-- Create an issue in the repository
-- Check existing issues for solutions
-- Review the documentation
-- Contact the development team
-
-## 📈 Performance & Monitoring
-
-- Built-in Next.js analytics
-- Better Auth session monitoring
-- Database query optimization with Drizzle
-- Check `/api/health` for system status
-
-## 🔒 Security Features
-
-- **Better Auth** - Secure authentication
-- **Session Management** - Automatic session handling
-- **CSRF Protection** - Built-in protection
-- **SQL Injection Prevention** - Drizzle ORM protection
-- **Environment Variables** - Secure configuration
+For questions about this assignment, contact: pulkit@kandid.ai
 
 ---
 
-**Built with ❤️ using Next.js, TypeScript, Drizzle ORM, and Better Auth**
-
-For more information, visit the [official documentation](https://github.com/your-repo/kandid).
+**Built for the Kandid internship assignment - replicating Linkbird.ai platform interface**
