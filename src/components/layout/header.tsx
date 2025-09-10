@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { ChevronRight, Home } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 interface BreadcrumbItem {
   label: string
@@ -40,26 +41,29 @@ export function Header() {
 
   return (
     <header className="h-16 border-b border-border bg-background flex items-center px-6">
-      <div className="flex items-center space-x-2 text-sm">
-        {breadcrumbs.map((item, index) => (
-          <div key={item.href || item.label} className="flex items-center">
-            {index > 0 && (
-              <ChevronRight className="h-4 w-4 text-muted-foreground mx-2" />
-            )}
-            {index === 0 && (
-              <Home className="h-4 w-4 text-muted-foreground mr-2" />
-            )}
-            <span
-              className={cn(
-                index === breadcrumbs.length - 1
-                  ? "text-foreground font-medium"
-                  : "text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+      <div className="flex items-center gap-4">
+        <ThemeToggle />
+        <div className="flex items-center space-x-2 text-sm">
+          {breadcrumbs.map((item, index) => (
+            <div key={item.href || item.label} className="flex items-center">
+              {index > 0 && (
+                <ChevronRight className="h-4 w-4 text-muted-foreground mx-2" />
               )}
-            >
-              {item.label}
-            </span>
-          </div>
-        ))}
+              {index === 0 && (
+                <Home className="h-4 w-4 text-muted-foreground mr-2" />
+              )}
+              <span
+                className={cn(
+                  index === breadcrumbs.length - 1
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                )}
+              >
+                {item.label}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
     </header>
   )
