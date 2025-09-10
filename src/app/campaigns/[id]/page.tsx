@@ -8,6 +8,7 @@ import { OverviewTab } from '@/components/campaigns/OverviewTab';
 import { LeadsTab } from '@/components/campaigns/LeadsTab';
 import { SequenceTab } from '@/components/campaigns/SequenceTab';
 import { SettingsTab } from '@/components/campaigns/SettingsTab';
+import { Spinner } from '@/components/ui/shadcn-io/spinner';
 
 interface CampaignPageProps {
   params: Promise<{
@@ -21,7 +22,14 @@ export default function Campaign({ params }: CampaignPageProps) {
   const { data: campaign, isLoading, error } = useCampaignDetail(campaignId);
   const [activeTab, setActiveTab] = useState('overview');
 
-  if (isLoading) return <div className="p-6">Loading campaign details...</div>;
+  if (isLoading) return (
+    <div className="flex h-screen items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-4">
+        <Spinner className="text-gray-500" size={32} />
+        <span className="text-gray-600">Loading campaign details...</span>
+      </div>
+    </div>
+  );
   if (error) return <div className="p-6 text-red-600">Error loading campaign</div>;
   if (!campaign) return <div className="p-6">Campaign not found</div>;
 
