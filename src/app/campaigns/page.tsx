@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useCampaigns } from '@/hooks/useCampaigns';
+import { useCampaigns, useCampaignStatuses } from '@/hooks/useCampaigns';
 import { useRouter } from 'next/navigation';
 import { User, Clock, X, UserCheck, MessageSquare } from 'lucide-react';
 import { CampaignsTableSkeleton } from '@/components/campaigns/CampaignsTableSkeleton';
@@ -16,8 +16,9 @@ const statusColors = {
 export default function CampaignsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const { data: campaigns, isLoading, error } = useCampaigns(debouncedSearchTerm);
   const [statusFilter, setStatusFilter] = useState('All');
+  const { data: campaigns, isLoading, error } = useCampaigns(debouncedSearchTerm, statusFilter);
+  const { data: availableStatuses, isLoading: statusesLoading } = useCampaignStatuses();
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const router = useRouter();
@@ -31,24 +32,20 @@ export default function CampaignsPage() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  if (isLoading) {
+  if (isLoading || statusesLoading) {
     return <CampaignsTableSkeleton />;
   }
 
   if (error) return <div className="p-6 text-red-600">Error loading campaigns</div>;
 
-  const filteredCampaigns = campaigns?.filter(campaign => 
-    statusFilter === 'All' || campaign.status === statusFilter
-  ) || [];
-
-  const sortedCampaigns = [...filteredCampaigns].sort((a, b) => {
+  const sortedCampaigns = [...(campaigns || [])].sort((a, b) => {
     const aValue = a[sortBy as keyof typeof a];
     const bValue = b[sortBy as keyof typeof b];
     
     if (sortOrder === 'asc') {
       return aValue > bValue ? 1 : -1;
     }
-    return aValue < bValue ? 1 : -1;
+    return aValue < bValue ? -1 : 1;
   });
 
   const handleSort = (column: string) => {
@@ -76,17 +73,27 @@ export default function CampaignsPage() {
       {/* Filters */}
       <div className="mb-6 flex gap-4">
         <div className="flex gap-2">
-          {['All Campaigns', 'Active', 'Inactive'].map((filter) => (
+          <button
+            onClick={() => setStatusFilter('All')}
+            className={`px-4 py-2 rounded-lg ${
+              statusFilter === 'All'
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            All Campaigns
+          </button>
+          {availableStatuses?.map((status) => (
             <button
-              key={filter}
-              onClick={() => setStatusFilter(filter === 'All Campaigns' ? 'All' : filter)}
+              key={status}
+              onClick={() => setStatusFilter(status)}
               className={`px-4 py-2 rounded-lg ${
-                statusFilter === (filter === 'All Campaigns' ? 'All' : filter)
+                statusFilter === status
                   ? 'bg-blue-100 text-blue-700'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
-              {filter}
+              {status}
             </button>
           ))}
         </div>

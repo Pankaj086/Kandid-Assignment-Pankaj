@@ -21,10 +21,13 @@ interface CampaignDetail extends Campaign {
   }>;
 }
 
-const fetchCampaigns = async (searchTerm?: string): Promise<Campaign[]> => {
+const fetchCampaigns = async (searchTerm?: string, statusFilter?: string): Promise<Campaign[]> => {
   const url = new URL('/api/campaigns', window.location.origin);
   if (searchTerm) {
     url.searchParams.set('search', searchTerm);
+  }
+  if (statusFilter && statusFilter !== 'All') {
+    url.searchParams.set('status', statusFilter);
   }
   
   const response = await fetch(url);
@@ -46,10 +49,20 @@ const fetchCampaignById = async (campaignId: number): Promise<CampaignDetail> =>
   return response.json();
 };
 
-export const useCampaigns = (searchTerm?: string) => {
+const fetchCampaignStatuses = async (): Promise<string[]> => {
+  const response = await fetch('/api/campaigns/statuses');
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch campaign statuses');
+  }
+  
+  return response.json();
+};
+
+export const useCampaigns = (searchTerm?: string, statusFilter?: string) => {
   return useQuery({
-    queryKey: ['campaigns', searchTerm],
-    queryFn: () => fetchCampaigns(searchTerm),
+    queryKey: ['campaigns', searchTerm, statusFilter],
+    queryFn: () => fetchCampaigns(searchTerm, statusFilter),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
@@ -60,5 +73,13 @@ export const useCampaignDetail = (campaignId: number | null) => {
     queryFn: () => fetchCampaignById(campaignId!),
     enabled: !!campaignId,
     staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useCampaignStatuses = () => {
+  return useQuery({
+    queryKey: ['campaign-statuses'],
+    queryFn: fetchCampaignStatuses,
+    staleTime: 15 * 60 * 1000, // 15 minutes
   });
 };
