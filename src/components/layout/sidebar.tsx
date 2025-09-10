@@ -37,8 +37,8 @@ const navigationItems: NavItem[] = [
     icon: Users
   },
   {
-    title: 'Campaign',
-    href: '/campaign',
+    title: 'Campaigns',
+    href: '/campaigns',
     icon: Megaphone
   },
   {

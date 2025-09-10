@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
   const protectedRoutes = [
     '/dashboard',
     '/leads',
-    '/campaign',
+    '/campaigns',
     '/messages',
     '/linkedin-accounts',
     '/settings',
