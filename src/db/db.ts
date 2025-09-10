@@ -19,6 +19,7 @@ console.log("pankaj",process.env.PGUSER)
 // Simple query logging with one environment variable
 if (process.env.LOG_QUERIES === 'true') {
     const originalQuery = pool.query.bind(pool);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pool.query = (text: any, params?: any) => {
         const query = typeof text === 'string' ? text : text.text;
         console.log('🔍 SQL:', query);
@@ -28,11 +29,6 @@ if (process.env.LOG_QUERIES === 'true') {
             let actualQuery = query;
             interface QueryParam {
                 value: string | number | boolean | Date | null | undefined;
-            }
-            
-            interface FormattedParam {
-                placeholder: string;
-                value: string;
             }
 
             params.forEach((param: QueryParam['value'], index: number) => {
