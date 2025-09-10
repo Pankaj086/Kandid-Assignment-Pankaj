@@ -74,6 +74,7 @@ export default function Login({ onBack, onRegisterClick }: LoginProps) {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full h-10 bg-gray-100 border-0 rounded mt-1"
               placeholder="Enter your email or username"
+              required
             />
           </div>
           
@@ -86,6 +87,7 @@ export default function Login({ onBack, onRegisterClick }: LoginProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full h-10 bg-gray-100 border-0 rounded pr-10"
                 placeholder="Enter your password"
+                required
               />
               <button
                 type="button"

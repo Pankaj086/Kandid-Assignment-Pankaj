@@ -77,6 +77,7 @@ export default function Register({ onBack, onLoginClick }: RegisterProps) {
                 onChange={(e) => setFirstName(e.target.value)}
                 className="w-full h-10 bg-gray-100 border-0 rounded mt-1"
                 placeholder="First Name"
+                required
               />
             </div>
             <div className="space-y-2">
@@ -87,6 +88,7 @@ export default function Register({ onBack, onLoginClick }: RegisterProps) {
                 onChange={(e) => setLastName(e.target.value)}
                 className="w-full h-10 bg-gray-100 border-0 rounded mt-1"
                 placeholder="Last Name"
+                required
               />
             </div>
           </div>
@@ -99,6 +101,7 @@ export default function Register({ onBack, onLoginClick }: RegisterProps) {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full h-10 bg-gray-100 border-0 rounded mt-1"
               placeholder="Enter your email"
+              required
             />
           </div>
           
@@ -111,6 +114,7 @@ export default function Register({ onBack, onLoginClick }: RegisterProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full h-10 bg-gray-100 border-0 rounded pr-10"
                 placeholder="Enter your password"
+                required
               />
               <button
                 type="button"
